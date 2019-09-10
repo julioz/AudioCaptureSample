@@ -5,8 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.media.AudioPlaybackCaptureConfiguration
-import android.media.AudioRecord
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Bundle
@@ -19,7 +17,7 @@ import androidx.core.content.ContextCompat
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
-    private var mediaProjection: MediaProjection? = null
+    private var mediaProjectionObtained: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,20 +32,15 @@ class MainActivity : AppCompatActivity() {
     private fun startCapturing() {
         if (!isRecordAudioPermissionGranted()) {
             requestRecordAudioPermission()
-        } else if (mediaProjection == null) {
+        } else if (!mediaProjectionObtained) {
             startMediaProjectionRequest()
         } else {
-            captureAudio()
+            startAudioCaptureService()
         }
     }
 
-    private fun captureAudio() {
-        val config = AudioPlaybackCaptureConfiguration.Builder(mediaProjection!!)
-//            .addMatchingUsage(AudioAttributes.USAGE_MEDIA) TODO provide UI options for inclusion/exclusion
-            .build()
-        val record = AudioRecord.Builder()
-            .setAudioPlaybackCaptureConfig(config)
-            .build()
+    private fun startAudioCaptureService() {
+        startForegroundService(Intent(this, AudioCaptureService::class.java))
     }
 
     private fun isRecordAudioPermissionGranted(): Boolean {
@@ -108,8 +101,7 @@ class MainActivity : AppCompatActivity() {
                     this, "MediaProjection obtained. Click the button once again.",
                     Toast.LENGTH_SHORT
                 ).show()
-                mediaProjection =
-                    mediaProjectionManager.getMediaProjection(resultCode, data!!) as MediaProjection
+                mediaProjectionObtained = true
             } else {
                 Toast.makeText(
                     this, "Request to obtain MediaProjection denied.",
