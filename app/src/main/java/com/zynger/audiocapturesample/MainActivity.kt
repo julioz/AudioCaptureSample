@@ -108,6 +108,8 @@ class MainActivity : AppCompatActivity() {
                     this, "MediaProjection obtained. Click the button once again.",
                     Toast.LENGTH_SHORT
                 ).show()
+
+                startForegroundService(Intent(this, AudioCaptureService::class.java))
                 mediaProjection =
                     mediaProjectionManager.getMediaProjection(resultCode, data!!) as MediaProjection
             } else {
