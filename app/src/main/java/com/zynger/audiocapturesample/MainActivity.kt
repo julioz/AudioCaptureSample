@@ -93,8 +93,10 @@ class MainActivity : AppCompatActivity() {
      * capturing session to be started. This will allow both video and audio to be captured.
      */
     private fun startMediaProjectionRequest() {
+        // use applicationContext to avoid memory leak on Android 10.
+        // see: https://partnerissuetracker.corp.google.com/issues/139732252
         mediaProjectionManager =
-            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+            applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         startActivityForResult(
             mediaProjectionManager.createScreenCaptureIntent(),
             MEDIA_PROJECTION_REQUEST_CODE
