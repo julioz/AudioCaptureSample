@@ -121,6 +121,12 @@ class AudioCaptureService : Service() {
         return File(audioCapturesDirectory.absolutePath + "/" + fileName)
     }
 
+    /**
+     * TODO
+     * Note: The work here is being done on the UI thread, which gets blocked.
+     * This piece of logic should be moved into a worker thread so we don't get UI freezes when
+     * recording starts.
+     */
     private fun writeAudioToFile(outputFile: File) {
         val fileOutputStream = FileOutputStream(outputFile)
         val capturedAudioSamples = ShortArray(NUM_SAMPLES_PER_READ)
