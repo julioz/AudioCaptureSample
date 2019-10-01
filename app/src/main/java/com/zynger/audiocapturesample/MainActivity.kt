@@ -5,9 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.media.AudioPlaybackCaptureConfiguration
-import android.media.AudioRecord
-import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Bundle
 import android.widget.Button
@@ -19,7 +16,6 @@ import androidx.core.content.ContextCompat
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
-    private var mediaProjection: MediaProjection? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,25 +25,32 @@ class MainActivity : AppCompatActivity() {
             .setOnClickListener {
                 startCapturing()
             }
+
+        findViewById<Button>(R.id.btn_stop_recording)
+            .setOnClickListener {
+                stopCapturing()
+            }
+    }
+
+    private fun setButtonsEnabled(isCapturingAudio: Boolean) {
+        findViewById<Button>(R.id.btn_start_recording).isEnabled = !isCapturingAudio
+        findViewById<Button>(R.id.btn_stop_recording).isEnabled = isCapturingAudio
     }
 
     private fun startCapturing() {
         if (!isRecordAudioPermissionGranted()) {
             requestRecordAudioPermission()
-        } else if (mediaProjection == null) {
-            startMediaProjectionRequest()
         } else {
-            captureAudio()
+            startMediaProjectionRequest()
         }
     }
 
-    private fun captureAudio() {
-        val config = AudioPlaybackCaptureConfiguration.Builder(mediaProjection!!)
-//            .addMatchingUsage(AudioAttributes.USAGE_MEDIA) TODO provide UI options for inclusion/exclusion
-            .build()
-        val record = AudioRecord.Builder()
-            .setAudioPlaybackCaptureConfig(config)
-            .build()
+    private fun stopCapturing() {
+        setButtonsEnabled(isCapturingAudio = false)
+
+        startService(Intent(this, AudioCaptureService::class.java).apply {
+            action = AudioCaptureService.ACTION_STOP
+        })
     }
 
     private fun isRecordAudioPermissionGranted(): Boolean {
@@ -107,7 +110,8 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 Toast.makeText(
-                    this, "MediaProjection permission obtained. Foreground service will be started to capture audio.",
+                    this,
+                    "MediaProjection permission obtained. Foreground service will be started to capture audio.",
                     Toast.LENGTH_SHORT
                 ).show()
 
@@ -116,6 +120,8 @@ class MainActivity : AppCompatActivity() {
                     putExtra(AudioCaptureService.EXTRA_RESULT_DATA, data!!)
                 }
                 startForegroundService(audioCaptureIntent)
+
+                setButtonsEnabled(isCapturingAudio = true)
             } else {
                 Toast.makeText(
                     this, "Request to obtain MediaProjection denied.",

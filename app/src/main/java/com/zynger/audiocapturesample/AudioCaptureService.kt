@@ -51,12 +51,14 @@ class AudioCaptureService : Service() {
                             intent.getParcelableExtra(EXTRA_RESULT_DATA)!!
                         ) as MediaProjection
                     startAudioCapture()
+                    Service.START_STICKY
                 }
-                ACTION_STOP -> stopAudioCapture()
+                ACTION_STOP -> {
+                    stopAudioCapture()
+                    Service.START_NOT_STICKY
+                }
                 else -> throw IllegalArgumentException("Unexpected action received: ${intent.action}")
             }
-
-            Service.START_STICKY
         } else {
             Service.START_NOT_STICKY
         }
@@ -67,6 +69,9 @@ class AudioCaptureService : Service() {
 
     private fun stopAudioCapture() {
         requireNotNull(mediaProjection) { "Tried to stop audio capture, but there was no ongoing capture in place!" }
+
+        mediaProjection!!.stop()
+        stopSelf()
     }
 
     override fun onBind(p0: Intent?): IBinder? = null
