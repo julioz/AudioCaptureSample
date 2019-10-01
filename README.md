@@ -4,7 +4,7 @@ Sample app for Android 10's AudioPlaybackCapture API, which allows applications 
 
 This app serves as a showcase for how to request the proper permissions and architect an application by using a foreground service that wraps the audio sample data capturing. You can also use it to ensure your application behaves properly when targetting API level 29 and above.
 
-<add_screenshot>
+![Attribute setting effect](docs/audio_waves.png)
 
 Check the [official API release blog post](https://android-developers.googleblog.com/2019/07/capturing-audio-in-android-q.html) for more information on how to allow/disallow apps from recording your apps' media output.
 
@@ -26,3 +26,4 @@ D/AudioCaptureService: Audio capture finished for /storage/emulated/0/Android/da
 
 You can then pull the file from the device and play the media back. Make sure you use a player that is capable of rendering raw PCM data (for example, on [Audacity](https://www.audacityteam.org/download/), you can `File > Import > Raw Data`).
 
+![App screenshot](docs/app_screenshot.png)
