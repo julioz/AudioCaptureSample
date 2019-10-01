@@ -26,4 +26,4 @@ D/AudioCaptureService: Audio capture finished for /storage/emulated/0/Android/da
 
 You can then pull the file from the device and play the media back. Make sure you use a player that is capable of rendering raw PCM data (for example, on [Audacity](https://www.audacityteam.org/download/), you can `File > Import > Raw Data`).
 
-![App screenshot](docs/app_screenshot.png)
+<img src="./docs/app_screenshot.png" width=260px />
