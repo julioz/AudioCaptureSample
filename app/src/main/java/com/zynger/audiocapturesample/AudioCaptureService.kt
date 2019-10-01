@@ -163,6 +163,8 @@ class AudioCaptureService : Service() {
     override fun onBind(p0: Intent?): IBinder? = null
 
     private fun ShortArray.toByteArray(): ByteArray {
+        // Samples get translated into bytes following little-endianness:
+        // least significant byte first and the most significant byte last
         val bytes = ByteArray(size * 2)
         for (i in 0 until size) {
             bytes[i * 2] = (this[i] and 0x00FF).toByte()

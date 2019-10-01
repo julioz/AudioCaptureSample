@@ -17,7 +17,7 @@ Tapping the "Capture audio" button on the UI will present two permission request
 Once both are granted, a foreground service (with an attached status bar notification) will be started, spawning a thread that performs the audio sample capturing. For the sake of the example, these samples have hardcoded characteristics in the configuration object:
  - Sample rate of 8000 Hz
  - Mono channel
- - No encoding: PCM 16-bit
+ - No encoding: PCM 16-bit (byte-order: little endian)
 
 Until the "Stop capture" button is tapped, the samples are written to a file in disk under the `/data` directory of the showcase application. The path to the written file will be outputted to LogCat, like so
 ```
