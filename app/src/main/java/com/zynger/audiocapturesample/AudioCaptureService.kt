@@ -19,6 +19,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.concurrent.thread
 import kotlin.experimental.and
 
 
@@ -27,7 +28,7 @@ class AudioCaptureService : Service() {
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private var mediaProjection: MediaProjection? = null
 
-    private var isRecording: Boolean = false
+    private lateinit var audioCaptureThread: Thread
     private var audioRecord: AudioRecord? = null
 
     override fun onCreate() {
@@ -104,11 +105,12 @@ class AudioCaptureService : Service() {
             .setAudioPlaybackCaptureConfig(config)
             .build()
 
-        isRecording = true
         audioRecord!!.startRecording()
-        val outputFile = createAudioFile()
-        Log.d(LOG_TAG, "Created file for capture target: ${outputFile.absolutePath}")
-        writeAudioToFile(outputFile)
+        audioCaptureThread = thread(start = true) {
+            val outputFile = createAudioFile()
+            Log.d(LOG_TAG, "Created file for capture target: ${outputFile.absolutePath}")
+            writeAudioToFile(outputFile)
+        }
     }
 
     private fun createAudioFile(): File {
@@ -121,18 +123,12 @@ class AudioCaptureService : Service() {
         return File(audioCapturesDirectory.absolutePath + "/" + fileName)
     }
 
-    /**
-     * TODO
-     * Note: The work here is being done on the UI thread, which gets blocked.
-     * This piece of logic should be moved into a worker thread so we don't get UI freezes when
-     * recording starts.
-     */
     private fun writeAudioToFile(outputFile: File) {
         val fileOutputStream = FileOutputStream(outputFile)
         val capturedAudioSamples = ShortArray(NUM_SAMPLES_PER_READ)
 
-        while (isRecording) {
-            audioRecord!!.read(capturedAudioSamples, 0, NUM_SAMPLES_PER_READ)
+        while (!audioCaptureThread.isInterrupted) {
+            audioRecord?.read(capturedAudioSamples, 0, NUM_SAMPLES_PER_READ)
 
             // This loop should be as fast as possible to avoid artifacts in the captured audio
             // You can uncomment the following line to see the capture samples but
@@ -153,7 +149,8 @@ class AudioCaptureService : Service() {
     private fun stopAudioCapture() {
         requireNotNull(mediaProjection) { "Tried to stop audio capture, but there was no ongoing capture in place!" }
 
-        isRecording = false
+        audioCaptureThread.interrupt()
+        audioCaptureThread.join()
 
         audioRecord!!.stop()
         audioRecord!!.release()
