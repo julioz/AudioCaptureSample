@@ -6,15 +6,23 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.AudioFormat
+import android.media.AudioPlaybackCaptureConfiguration
+import android.media.AudioRecord
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 
+
 class AudioCaptureService : Service() {
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private var mediaProjection: MediaProjection? = null
+
+    private var isRecording: Boolean = false
+    private var audioRecord: AudioRecord? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -65,10 +73,48 @@ class AudioCaptureService : Service() {
     }
 
     private fun startAudioCapture() {
+        val config = AudioPlaybackCaptureConfiguration.Builder(mediaProjection!!)
+            .addMatchingUsage(AudioAttributes.USAGE_MEDIA) // TODO provide UI options for inclusion/exclusion
+            .build()
+
+        /**
+         * Using hardcoded values for the audio format, Mono PCM samples with a sample rate of 8000Hz
+         * These can be changed according to your application's needs
+         */
+        val audioFormat = AudioFormat.Builder()
+            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+            .setSampleRate(8000)
+            .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
+            .build()
+
+        audioRecord = AudioRecord.Builder()
+            .setAudioFormat(audioFormat)
+            // For optimal performance, the buffer size
+            // can be optionally specified to store audio samples.
+            // If the value is not specified,
+            // uses a single frame and lets the
+            // native code figure out the minimum buffer size.
+            // .setBufferSizeInBytes(sizeInBytes)
+            .setAudioPlaybackCaptureConfig(config)
+            .build()
+
+        isRecording = true
+        audioRecord!!.startRecording()
+        writeAudioDataToFile()
+    }
+
+    private fun writeAudioDataToFile() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     private fun stopAudioCapture() {
         requireNotNull(mediaProjection) { "Tried to stop audio capture, but there was no ongoing capture in place!" }
+
+        isRecording = false
+
+        audioRecord!!.stop()
+        audioRecord!!.release()
+        audioRecord = null
 
         mediaProjection!!.stop()
         stopSelf()
