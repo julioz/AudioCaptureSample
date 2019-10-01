@@ -107,13 +107,15 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 Toast.makeText(
-                    this, "MediaProjection obtained. Click the button once again.",
+                    this, "MediaProjection permission obtained. Foreground service will be started to capture audio.",
                     Toast.LENGTH_SHORT
                 ).show()
 
-                startForegroundService(Intent(this, AudioCaptureService::class.java))
-                mediaProjection =
-                    mediaProjectionManager.getMediaProjection(resultCode, data!!) as MediaProjection
+                val audioCaptureIntent = Intent(this, AudioCaptureService::class.java).apply {
+                    action = AudioCaptureService.ACTION_START
+                    putExtra(AudioCaptureService.EXTRA_RESULT_DATA, data!!)
+                }
+                startForegroundService(audioCaptureIntent)
             } else {
                 Toast.makeText(
                     this, "Request to obtain MediaProjection denied.",
