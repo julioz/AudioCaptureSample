@@ -14,7 +14,7 @@ Tapping the "Capture audio" button on the UI will present two permission request
  - [record audio permission](https://developer.android.com/reference/android/Manifest.permission#RECORD_AUDIO)
  - [media projection permission](https://developer.android.com/reference/android/media/projection/MediaProjectionManager#createScreenCaptureIntent())
 
-Once both are granted, a foreground service (with an attached status bar notification) will be started, spawning a thread that performs the audio sample capturing. For the sake of the example, these samples have hardcoded characteristics in the configuration object:
+Once both are granted, a foreground service (with an attached status bar notification) will be started, spawning a thread that performs the audio sample capturing. For the sake of the example, these samples have hardcoded characteristics in the [configuration object](https://github.com/julioz/AudioCaptureSample/blob/master/app/src/main/java/com/zynger/audiocapturesample/AudioCaptureService.kt#L91-L95):
  - Sample rate of 8000 Hz
  - Mono channel
  - No encoding: PCM 16-bit (byte-order: little endian)
