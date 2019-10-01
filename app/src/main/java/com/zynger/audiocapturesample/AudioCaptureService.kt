@@ -143,7 +143,7 @@ class AudioCaptureService : Service() {
         }
 
         fileOutputStream.close()
-        Log.d(LOG_TAG, "Audio capture finished.")
+        Log.d(LOG_TAG, "Audio capture finished for ${outputFile.absolutePath}. File size is ${outputFile.length()} bytes.")
     }
 
     private fun stopAudioCapture() {
